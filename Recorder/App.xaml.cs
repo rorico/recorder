@@ -3,7 +3,6 @@ using System.Windows;
 using System.Runtime.InteropServices;
 using WebSocketSharp.Server;
 using System;
-using System.Text;
 using System.Diagnostics;
 
 namespace Recorder
@@ -26,7 +25,7 @@ namespace Recorder
  
             _notifyIcon = new System.Windows.Forms.NotifyIcon();
             _notifyIcon.DoubleClick += (s, args) => ShowMainWindow();
-            _notifyIcon.Icon = Recorder.Properties.Resources.MyIcon;
+            _notifyIcon.Icon = Recorder.Properties.Resources.Icon;
             _notifyIcon.Visible = true;
  
             CreateContextMenu();
@@ -92,16 +91,14 @@ namespace Recorder
 
         public void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
-            // getFilename
-
             uint processId;
             if (GetWindowThreadProcessId(hwnd, out processId) > 0)
             {
                 String filename = Process.GetProcessById((int)processId).MainModule.FileName;
                 socket.WebSocketServices.Broadcast(filename);
+                Console.WriteLine(Process.GetProcessById((int)processId).MainModule.ModuleName);
                 Console.WriteLine(Process.GetProcessById((int)processId).MainModule.FileName);
             }
-            // Log.Text = GetActiveWindowTitle() + "\r\n";
         }
     }
 }
