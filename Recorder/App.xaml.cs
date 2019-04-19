@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using WebSocketSharp.Server;
 using System;
 using System.Diagnostics;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Recorder
 {
@@ -89,15 +91,30 @@ namespace Recorder
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+        [DllImport("user32.dll")]
+        static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+
+        private string GetActiveWindowTitle(IntPtr hwnd)
+        {
+            const int nChars = 256;
+            IntPtr handle = IntPtr.Zero;
+            StringBuilder Buff = new StringBuilder(nChars);
+
+            if (GetWindowText(hwnd, Buff, nChars) > 0)
+            {
+                return Buff.ToString();
+            }
+            return null;
+        }
+
         public void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
             uint processId;
             if (GetWindowThreadProcessId(hwnd, out processId) > 0)
             {
                 String filename = Process.GetProcessById((int)processId).MainModule.FileName;
-                socket.WebSocketServices.Broadcast(filename);
-                Console.WriteLine(Process.GetProcessById((int)processId).MainModule.ModuleName);
-                Console.WriteLine(Process.GetProcessById((int)processId).MainModule.FileName);
+                String[] ret = new String[] { filename, GetActiveWindowTitle(hwnd) };
+                socket.WebSocketServices.Broadcast(JsonConvert.SerializeObject(ret));
             }
         }
     }
