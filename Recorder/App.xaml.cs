@@ -112,9 +112,14 @@ namespace Recorder
             uint processId;
             if (GetWindowThreadProcessId(hwnd, out processId) > 0)
             {
-                String filename = Process.GetProcessById((int)processId).MainModule.FileName;
-                String[] ret = new String[] { filename, GetActiveWindowTitle(hwnd) };
-                socket.WebSocketServices.Broadcast(JsonConvert.SerializeObject(ret));
+                try
+                {
+                    String filename = Process.GetProcessById((int)processId).MainModule.FileName;
+                    String[] ret = new String[] { filename, GetActiveWindowTitle(hwnd) };
+                    socket.WebSocketServices.Broadcast(JsonConvert.SerializeObject(ret));
+                } catch(Exception)
+                {
+                }
             }
         }
     }
